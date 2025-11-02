@@ -12,7 +12,7 @@
 | `detail` | String (optional) | <= 2,000 字元 |
 | `createdAt` | Date | ISO8601 UTC |
 | `updatedAt` | Date | ISO8601 UTC，衝突決策依此欄位 |
-| `customOrderIndex` | Double (optional) | 以浮點儲存自訂順序 |
+| `sortOrder` | Double (optional) | 以浮點儲存自訂順序 |
 | `lastSyncedAt` | Date (optional) | SwiftData 同步完成時間（映射自 metadata） |
 | `lastSyncError` | String (optional) | 最近錯誤訊息 |
 

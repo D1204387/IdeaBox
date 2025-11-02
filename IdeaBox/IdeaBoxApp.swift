@@ -14,7 +14,13 @@ struct IdeaBoxApp: App {
         let schema = Schema([
             Idea.self
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        
+        // Configure for CloudKit sync
+        let modelConfiguration = ModelConfiguration(
+            schema: schema,
+            isStoredInMemoryOnly: false,
+            cloudKitDatabase: .private("iCloud.com.buildwithharry.IdeaBox")
+        )
         
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])

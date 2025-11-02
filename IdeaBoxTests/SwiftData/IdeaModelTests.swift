@@ -38,9 +38,7 @@ struct IdeaModelTests {
         #expect(idea.title == "簡單想法")
         #expect(idea.detail == nil)
         #expect(idea.isCompleted == false)
-        #expect(idea.customOrderIndex == nil)
-        #expect(idea.lastSyncedAt == nil)
-        #expect(idea.lastSyncError == nil)
+        #expect(idea.sortOrder == nil)
     }
     
     @Test("Idea 模型的 createdAt 和 updatedAt 應該自動設定為當前時間")
@@ -74,30 +72,15 @@ struct IdeaModelTests {
     }
     
     @Test("Idea 模型應該允許設定自訂排序索引")
-    func testIdeaCustomOrderIndex() {
+    func testIdeaSortOrder() {
         // Given
         let idea = Idea(title: "可排序的想法")
         
         // When
-        idea.customOrderIndex = 1.5
+        idea.sortOrder = 1.5
         
         // Then
-        #expect(idea.customOrderIndex == 1.5)
-    }
-    
-    @Test("Idea 模型應該允許記錄同步錯誤")
-    func testIdeaSyncError() {
-        // Given
-        let idea = Idea(title: "同步測試")
-        let errorMessage = "網路連線失敗"
-        
-        // When
-        idea.lastSyncError = errorMessage
-        idea.lastSyncedAt = Date()
-        
-        // Then
-        #expect(idea.lastSyncError == errorMessage)
-        #expect(idea.lastSyncedAt != nil)
+        #expect(idea.sortOrder == 1.5)
     }
     
     @Test("Idea 模型應該支援更新 detail 內容")

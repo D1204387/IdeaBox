@@ -10,7 +10,7 @@
 
 ## 建立資料模型
 1. 在 `IdeaBox/Models/` 中使用 `@Model` 定義 `Idea`（同步資料源），提醒設定改採 `AppStorage`／UserDefaults 紀錄。
-2. 為 `customOrderIndex` 設定 `Double` 預設值（例如透過初始化器動態賦值）。
+2. 為 `sortOrder` 設定 `Double` 預設值（例如透過初始化器動態賦值）。
 3. 在 `IdeaBox/Services/Sync` 建立 `IdeaSyncService`：注入 `ModelContext` 與 `CloudSyncCoordinator`，讀取 SwiftData 變更佇列。
 
 ## 雲端同步
@@ -21,7 +21,7 @@
 ## 排序與拖拉
 1. 在 `IdeaSortingViewModel` 暴露 `sortMode` 狀態（枚舉：建立、更新、字母、自訂）。
 2. 切換至自訂模式時呼叫 `AlertState`（或內建 `Alert`）提醒「自訂排序會覆蓋既有順序」。
-3. 使用 `List` + `.onMove` 實作拖拉，將更新後的順序透過 `customOrderIndex` 儲存並同步。
+3. 使用 `List` + `.onMove` 實作拖拉，將更新後的順序透過 `sortOrder` 儲存並同步。
 
 ## 每日提醒
 1. 在 `ReminderAuthorizationService` 實作授權流程，於首次使用時提示授權。
