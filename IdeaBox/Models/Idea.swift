@@ -5,6 +5,7 @@
 //  Created by Harry Ng on 10/1/25.
 //
 
+
 import Foundation
 
 struct Idea: Identifiable {
