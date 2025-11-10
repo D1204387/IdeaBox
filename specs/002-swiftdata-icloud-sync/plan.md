@@ -3,17 +3,18 @@
 **分支**: `002-swiftdata-icloud-sync` | **日期**: 2025-11-10 | **規格**: [specs/002-swiftdata-icloud-sync/spec.md](../spec.md)
 **輸入**: 功能規格來自 `/specs/002-swiftdata-icloud-sync/spec.md`
 
+**註記**: 此計劃由 `/speckit.plan` 命令填寫。工作流程見 `.specify/templates/commands/plan.md`。
+
 ## 摘要
 
-IdeaBox 應用從使用模擬數據的 Phase 1 升級到 Phase 2，整合 SwiftData 進行本地持久化，並透過 CloudKit 支援 iCloud 同步。此實現保持 100% 的用戶界面和交互相容性，同時將資料層從記憶體遷移到永久存儲。核心特性包括：
+IdeaBox 應用從使用模擬數據的 Phase 1 升級到 Phase 2，整合 SwiftData 進行本地持久化，並透過 CloudKit 支援 iCloud 同步。此實現保持 100% 的用戶界面和交互相容性，同時將資料層從記憶體遷移到永久存儲。
 
+核心特性包括：
 1. **SwiftData 本地持久化** - 將 Idea 模型轉換為 @Model，支援 10,000+ 想法的存儲
 2. **iCloud 同步基礎設施** - CloudKit 整合，帳戶檢測，雙向同步
 3. **離線支援** - 離線模式下的變更在網路恢復時自動同步
 4. **衝突解決** - 毫秒精度時間戳，記錄級別優先策略
 5. **自動數據遷移** - 首次啟動時無縫遷移舊模擬數據
-
-
 
 ## 技術背景
 
@@ -51,8 +52,6 @@ IdeaBox 應用從使用模擬數據的 Phase 1 升級到 Phase 2，整合 SwiftD
 - 支援多裝置同步（5+ 個裝置）
 - 維持審計日誌（30 天或更久）
 
-
-
 ## 憲法檢查
 
 *門檻: 必須在 Phase 0 研究前通過。在 Phase 1 設計後重新檢查。*
@@ -80,92 +79,151 @@ IdeaBox 應用從使用模擬數據的 Phase 1 升級到 Phase 2，整合 SwiftD
 - **通過**: 遵循現代 SwiftUI 生態
 
 ✅ **原則四：架構清晰，職責分明**
-- Models/：Idea @Model 定義、SyncState、CloudKitContainer
-- Views/：現有視圖層保持不變
-- Services/（新增）：SyncService、CloudKitService、MigrationService
-- 單一職責：每個服務有明確邊界
-- **通過**: 保持清晰的分層架構
+- Models/ 層：數據模型 (@Model)、驗證規則、版本控制
+- Views/ 層：現有 UI 組件保持不變
+- Services/ 層（新增）：DataService、SyncService、CloudKitService、ConflictResolver
+- Tests/ 層（新增）：單元測試、UI 測試、集成測試
+- **通過**: 三層清晰分離
 
-✅ **原則五：簡單勝於複雜（YAGNI 原則）**
-- 未實現編輯、分類、標籤等 Phase 3 功能
-- 衝突解決採用簡單的時間戳優先（無複雜合併邏輯）
-- 指數退避重試是業界標準，非過度設計
-- 數據遷移在首次啟動時自動完成
-- **通過**: 設計聚焦於必要功能
+✅ **原則五：簡單勝於複雜 (YAGNI)**
+- 不實現 P3 高級功能（編輯、分類、排序等）
+- 專注 P1-P2 核心同步功能
+- 決策已做：毫秒精度時間戳足夠解決衝突（不實現複雜合併邏輯）
+- **通過**: 以現有需求為準，無過度設計
 
-### 門檻評估
-
-✅ **所有核心原則 PASS** - 無違反項目
-
-**複雜度追蹤**：無需追蹤，未超出預期複雜度
-
-
+**檢查結果**: 5/5 原則通過 ✅ 可進行 Phase 0 研究
 
 ## 項目結構
 
-### 文檔（此特性）
+### 文檔 (本特性)
 
 ```text
 specs/002-swiftdata-icloud-sync/
-├── plan.md              # 此文件（實現計劃）
-├── research.md          # Phase 0 輸出（已完成 - 所有澄清已在規格中解決）
-├── data-model.md        # Phase 1 輸出（數據模型和實體設計）
-├── quickstart.md        # Phase 1 輸出（快速開始指南）
-├── contracts/           # Phase 1 輸出（CloudKit 合約）
+├── plan.md                           # 實現計劃 (本檔案)
+├── spec.md                           # 功能規格 (已完成)
+├── research.md                       # Phase 0 研究報告 (待生成)
+├── data-model.md                     # Phase 1 數據模型 (待生成)
+├── quickstart.md                     # Phase 1 快速開始 (待生成)
 ├── checklists/
-│   └── requirements.md   # 品質檢查清單
-└── spec.md             # 特性規格（已完成並澄清）
+│   └── requirements.md               # 規格驗收清單 (待生成)
+├── contracts/
+│   └── cloudkit-specification.md     # CloudKit 合約 (待生成)
+└── tasks.md                          # Phase 2 任務分解 (由 /speckit.tasks 生成)
 ```
 
-### 源代碼（倉庫根目錄）
+### 源代碼 (iOS 應用)
 
-**選定結構: 單一 iOS 應用 + Services 層**
+#### 現有結構
 
 ```text
 IdeaBox/
-├── IdeaBoxApp.swift                  # 應用入口（無變化）
-├── ContentView.swift                 # 根視圖協調器（無變化）
-│
+├── IdeaBoxApp.swift                  # 應用入口
+├── ContentView.swift                 # 根視圖協調器
 ├── Models/
-│   ├── Idea.swift                   # ⚠️ 改: 新增 @Model 註解，SwiftData 支援
-│   │                                # 新增字段: createdAt, updatedAt, deviceId
-│   │                                # 移除: mock 數據（遷移到 MigrationService）
-│   └── SyncState.swift              # 新增: 追蹤同步狀態
-│
-├── Views/                            # 無變化
-│   ├── AllIdeasView.swift
-│   ├── SearchView.swift
-│   ├── CompletedIdeasView.swift
-│   ├── IdeaRow.swift
-│   └── AddIdeaSheet.swift
-│
-├── Services/                         # 新增層級
-│   ├── DataService.swift            # 新增: 本地 SwiftData 操作
-│   ├── SyncService.swift            # 新增: 同步協調器
-│   ├── CloudKitService.swift        # 新增: CloudKit API 封裝
-│   ├── MigrationService.swift       # 新增: 舊數據遷移
-│   └── ConflictResolver.swift       # 新增: 衝突解決邏輯
-│
-├── Assets.xcassets/                 # 無變化
-│
-├── IdeaBox.xcodeproj/               # 項目配置（需更新: CloudKit 容器）
-│
-└── Tests/
-    ├── IdeaBoxTests/
-    │   ├── Models/DataModelTests.swift       # 新增
-    │   ├── Services/SyncServiceTests.swift   # 新增
-    │   ├── Services/ConflictResolverTests.swift # 新增
-    │   └── Integration/E2ESyncTests.swift    # 新增
-    │
-    └── IdeaBoxUITests/
-        ├── PersistenceUITests.swift         # 新增
-        ├── SyncUITests.swift                # 新增
-        └── OfflineModeUITests.swift         # 新增
+│   └── Idea.swift                    # 想法模型 (升級為 @Model)
+└── Views/
+    ├── AllIdeasView.swift            # 全部想法視圖
+    ├── SearchView.swift              # 搜尋視圖
+    ├── CompletedIdeasView.swift       # 已完成視圖
+    ├── IdeaRow.swift                 # 想法行組件
+    └── AddIdeaSheet.swift            # 新增想法表單
 ```
 
-**結構決策**: 
-- Services 層管理所有與 SwiftData 和 CloudKit 的交互
-- Views 層保持不變，透過依賴注入接收 DataService
-- Models 層新增 @Model 註解用於 SwiftData 持久化
-- 測試完全覆蓋新增的服務和遷移邏輯
+#### 新增結構
 
+```text
+Models/
+├── SyncState.swift                   # 同步狀態追蹤 (新增)
+└── SyncLog.swift                     # 審計日誌 (新增)
+
+Services/                             # 業務邏輯層 (新增)
+├── DataService.swift                 # SwiftData 本地操作
+├── SyncService.swift                 # 同步協調器
+├── CloudKitService.swift             # CloudKit API 封裝
+├── MigrationService.swift            # 舊數據遷移
+└── ConflictResolver.swift            # 衝突解決邏輯
+
+IdeaBoxTests/                         # 單元測試 (新增)
+├── Models/
+│   └── DataModelTests.swift
+├── Services/
+│   ├── SyncServiceTests.swift
+│   ├── CloudKitServiceTests.swift
+│   ├── MigrationServiceTests.swift
+│   └── ConflictResolverTests.swift
+└── Integration/
+    └── E2ESyncTests.swift
+
+IdeaBoxUITests/                       # UI 測試 (新增)
+├── PersistenceUITests.swift          # 本地持久化 UI 測試
+├── SyncUITests.swift                 # 多裝置同步 UI 測試
+└── OfflineModeUITests.swift          # 離線模式 UI 測試
+```
+
+### 技術決策
+
+| 決策 | 選項 | 依據 |
+|------|------|------|
+| **同步策略** | 按需同步 + 背景更新 | 平衡電池效率與即時性 |
+| **衝突解決** | 記錄級別、時間戳優先 | 符合 MVP、足以解決 99%+ 衝突 |
+| **數據遷移** | 首次啟動自動遷移 | 無使用者中斷、失敗回退離線 |
+| **重試機制** | 指數退避 (1s→2s→4s) | 業界標準、平衡快速恢復 |
+| **時間戳精度** | 毫秒精度 | 足以區分並發修改 |
+| **批次大小** | 100 筆記錄 | CloudKit 限制平衡 |
+
+### 工作計劃
+
+#### Phase 0 - 研究 (1 天)
+- [ ] 分析 5 個技術澄清點
+- [ ] 評估 SwiftData vs CoreData 權衡
+- [ ] 研究 CloudKit 原生同步機制
+- [ ] 產出 research.md
+
+#### Phase 1 - 設計與規範 (3 天)
+- [ ] 定義 3 個核心實體 (Idea, SyncState, SyncLog)
+- [ ] 設計 CloudKit 容器配置
+- [ ] 建立 5 種操作合約 (CREATE/UPDATE/DELETE/QUERY/SYNC)
+- [ ] 編寫環境設置指南
+- [ ] 產出 data-model.md, quickstart.md, contracts/
+
+#### Phase 2 - 任務分解 (1 天)
+- [ ] 將 P1-P4 用戶故事分解為可執行任務
+- [ ] 估算每個任務工作量
+- [ ] 產出 tasks.md
+
+#### Phase 3 - 實現 (6-8 週)
+- [ ] 實現 Services 層 (2 週)
+- [ ] 實現數據層升級 (1 週)
+- [ ] 實現數據遷移 (1 週)
+- [ ] 實現 iCloud 同步 (2 週)
+- [ ] 完整測試覆蓋 (2 週)
+
+#### Phase 4 - 驗證與發佈 (1 週)
+- [ ] 所有測試通過 (> 80% 涵蓋率)
+- [ ] 性能測試達成目標
+- [ ] 用戶驗收測試 (UAT)
+- [ ] 發佈到生產環境
+│   ├── components/
+│   ├── pages/
+│   └── services/
+└── tests/
+
+# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
+api/
+└── [same as backend above]
+
+ios/ or android/
+└── [platform-specific structure: feature modules, UI flows, platform tests]
+```
+
+**Structure Decision**: [Document the selected structure and reference the real
+directories captured above]
+
+## Complexity Tracking
+
+> **Fill ONLY if Constitution Check has violations that must be justified**
+
+| Violation | Why Needed | Simpler Alternative Rejected Because |
+|-----------|------------|-------------------------------------|
+| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
+| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
