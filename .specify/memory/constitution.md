@@ -1,50 +1,164 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# IdeaBox 專案憲法
 
-## Core Principles
+<!--
+[Sync Impact Report]
+新版本: 1.0.0（初始版本）
+修訂日期: 2025-11-10
+核心原則: 5 項（最小可行產品、品質與可測試性、SwiftUI 最佳實踐、清晰架構、YAGNI 原則）
+新增章節: 開發工作流、治理與修訂
+-->
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+## 核心原則
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### 一、最小可行產品優先
+IdeaBox 採用 MVP（最小可行產品）策略，每個功能迭代從最簡單、最必要的實現開始。
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+**非協商規則**：
+- 新功能必須通過用戶故事優先級排序
+- 先實現核心價值，後補邊界情況
+- 禁止預先設計超出當前需求的架構
+- 每個發布版本必須包含至少一個可運行的新功能或改進
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+**理由**：確保快速反饋、及早驗證商業假設、避免浪費資源在未驗證的需求上。
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### 二、品質與可測試性為必備條件
+所有代碼必須易於測試且驗證正確性。代碼品質直接影響維護成本和後續擴展能力。
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+**非協商規則**：
+- 編寫單元測試涵蓋核心業務邏輯（Model、ViewModel）
+- 編寫 UI 測試驗證主要用戶流程
+- 測試失敗時必須先修復測試或程式邏輯，禁止跳過或忽視
+- 新增功能時，測試代碼與實現代碼同時提交
+- 代碼審查時必須檢驗測試涵蓋率和測試質量
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+**理由**：早期發現 bug、降低重構風險、確保功能穩定性、便於團隊協作。
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+### 三、遵循 SwiftUI 現代最佳實踐
+IdeaBox 優先使用最新的 SwiftUI API，避免過時模式，確保代碼在 iOS 26+ 環境保持一致性。
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+**非協商規則**：
+- 必須使用 `@Observable` 宏替代 `ObservableObject` + `@Published`
+- 必須使用 `NavigationStack` 替代 `NavigationView`
+- 必須使用 `foregroundStyle()` 替代 `foregroundColor()`
+- 必須使用新版二參數 `onChange(of:)` 宏
+- 必須在 iOS 26+ 環境充分利用 Liquid Glass 等新視覺特性
+- 不允許使用已棄用（deprecated）的 API
 
-## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
+**理由**：保持代碼現代化、利用性能優化、確保統一的編碼風格、便於維護和擴展。
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+### 四、架構清晰，職責分明
+代碼組織遵循分層架構，每個模組有明確責任邊界。
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**非協商規則**：
+- **Models/** 目錄：數據模型、業務邏輯、模擬數據
+- **Views/** 目錄：UI 組件、視圖層、用戶互動邏輯
+- 每個視圖檔單一職責：一個檔案一個主要視圖或組件
+- 分享狀態通過 `@State`、`@Binding`、`@Observable` 明確傳遞
+- 禁止在視圖層直接實現複雜業務邏輯
+
+**理由**：便於測試、易於導航、減少耦合、支持代碼重用和團隊並行開發。
+
+### 五、簡單勝於複雜（YAGNI 原則）
+不實現"可能會用到"的功能，只實現當前實際需要的功能。避免過度工程化和不必要的抽象。
+
+**非協商規則**：
+- 新增功能時必須明確對應一個用戶故事或已驗證的需求
+- 禁止添加"可能有用"的通用工具或配置系統
+- 禁止過度抽象（如為單一用例創建通用基類或框架）
+- 優先選擇直白的實現而非高度抽象的設計
+
+**理由**：降低代碼複雜性、縮短交付時間、減少維護負擔、便於新貢獻者理解。
+
+## 開發工作流
+
+### 版本迭代計劃
+
+IdeaBox 分階段實現，每個階段交付特定價值：
+
+1. **Phase 1（當前）**：使用模擬數據的核心 MVP
+   - 三標籤頁面（全部、搜尋、已完成）
+   - 新增、完成、刪除想法
+   - 實時搜尋功能
+
+2. **Phase 2**：狀態管理和持久化
+   - 內存狀態管理
+   - 本地數據持久化（SwiftData 或類似）
+
+3. **Phase 3**：擴展功能
+   - 編輯想法功能
+   - 分類/標籤系統
+   - 想法排序選項
+
+4. **Phase 4**：高級功能
+   - 雲同步
+   - 多設備支持
+
+### 代碼組織
+
+```
+IdeaBox/
+├── IdeaBoxApp.swift           # 應用入口
+├── ContentView.swift          # 根視圖協調器
+├── Models/
+│   └── Idea.swift            # 數據模型和模擬數據
+├── Views/
+│   ├── AllIdeasView.swift    # 全部想法視圖
+│   ├── SearchView.swift      # 搜尋視圖
+│   ├── CompletedIdeasView.swift  # 已完成視圖
+│   ├── IdeaRow.swift         # 想法列表項組件
+│   └── AddIdeaSheet.swift    # 新增想法表單
+└── Assets.xcassets/
+```
+
+### 代碼審查檢查清單
+
+每次代碼審查必須檢驗：
+
+- ✓ 是否遵循 SwiftUI 現代最佳實踐（原則三）
+- ✓ 新增功能是否包含相應測試
+- ✓ 是否對應明確的用戶故事（原則一）
+- ✓ 代碼是否在 Models/ 或 Views/ 目錄的正確位置
+- ✓ 是否避免了不必要的複雜性（原則五）
+- ✓ 文件名和函數名是否清晰表達意圖
+
+### 測試要求
+
+- **單元測試**：數據模型、業務邏輯驗證
+- **UI 測試**：主要用戶流程（新增想法、標記完成、搜尋、刪除）
+- **測試標準**：新功能必須達到 80%+ 涵蓋率
+
+## 治理與修訂
+
+### 憲法的角色
+
+本憲法是 IdeaBox 專案的最高指導原則，所有決策、代碼貢獻、架構改動均應遵循本憲法。當本憲法與其他文檔衝突時，本憲法優先。
+
+### 修訂流程
+
+1. **提案**：提交修訂建議時必須說明理由和影響範圍
+2. **討論**：項目主要貢獻者進行充分討論
+3. **投票**：達成共識後記錄修訂
+4. **版本更新**：按語義化版本規則更新版本號
+5. **傳播**：在相關文檔（計劃、規格、任務模板）中更新引用
+
+### 版本規則
+
+- **主版本（MAJOR）**：原則修改、重大政策改變（向下不兼容）
+- **次版本（MINOR）**：新增原則、擴展現有原則指導
+- **補丁版本（PATCH）**：澄清、措辭調整、格式修正
+
+### 合規性審查
+
+- 項目主管定期審查代碼是否遵循本憲法
+- 審查頻率：每個 Phase 結束時進行一次
+- 不合規情況應被記錄並在下一次迭代中改正
+
+## 相關文檔
+
+- **CLAUDE.md**：開發者指導、構建和測試說明
+- **PRD.md**：產品需求、功能定義、技術棧
+- **TODO.md**：當前實現進度和待辦項
+
+---
+
+**版本**: 1.0.0 | **建立日期**: 2025-11-10 | **最後修訂**: 2025-11-10
